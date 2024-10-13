@@ -7,6 +7,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<TodoDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("TodoDbConnection")));
+builder.Services.AddDbContext<TodoDbReadContext>(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("TodoDbConnectionRead")));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -9,23 +9,25 @@ namespace TodoApi.Controllers
     [Route("api/[controller]")]
     public class TodoController : ControllerBase
     {
-        private readonly TodoDbContext _context;
+        private readonly TodoDbContext _writeContext;
+        private readonly TodoDbReadContext _readContext;
 
-        public TodoController(TodoDbContext context)
+        public TodoController(TodoDbContext writeContext, TodoDbReadContext readContext)
         {
-            _context = context;
+            _writeContext = writeContext;
+            _readContext = readContext;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Todo>>> GetTodos()
         {
-            return await _context.Todos.ToListAsync();
+            return await _readContext.Todos.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Todo>> GetTodo(int id)
         {
-            var todo = await _context.Todos.FindAsync(id);
+            var todo = await _readContext.Todos.FindAsync(id);
             if (todo == null)
             {
                 return NotFound();
@@ -36,8 +38,8 @@ namespace TodoApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Todo>> PostTodo(Todo todo)
         {
-            _context.Todos.Add(todo);
-            await _context.SaveChangesAsync();
+            _writeContext.Todos.Add(todo);
+            await _writeContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetTodo), new { id = todo.Id }, todo);
         }
 
@@ -48,21 +50,21 @@ namespace TodoApi.Controllers
             {
                 return BadRequest();
             }
-            _context.Entry(todo).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _writeContext.Entry(todo).State = EntityState.Modified;
+            await _writeContext.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodo(int id)
         {
-            var todo = await _context.Todos.FindAsync(id);
+            var todo = await _writeContext.Todos.FindAsync(id);
             if (todo == null)
             {
                 return NotFound();
             }
-            _context.Todos.Remove(todo);
-            await _context.SaveChangesAsync();
+            _writeContext.Todos.Remove(todo);
+            await _writeContext.SaveChangesAsync();
             return NoContent();
         }
     }
